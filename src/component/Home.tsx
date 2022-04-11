@@ -5,7 +5,9 @@ import StyledAppBar from "./common/StyledAppBar";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import InfiniteScroll from "react-infinite-scroll-component";
-const RickAndMortyCard = React.lazy(()=> import("./Card"))
+import RickAndMortyCard from "./Card"
+// const RickAndMortyCard = React.lazy(()=> import("./Card"))
+
 
 
 const StyledGrid = styled(Grid)`
@@ -147,8 +149,9 @@ const Home = () => {
         if(data!= null){
             console.log("setting user favourites",data.getUser.favorites )
              setFavoritesIds(data.getUser.favorites)
+             setfavoritesIdsLoaded(true)
         } else {
-           
+           console.log("here")
         }
     }, onError: (error)=> {
         console.log(error)
@@ -156,6 +159,7 @@ const Home = () => {
     /**Get Favourite List on Demand */
     const [getFavourites] = useLazyQuery (GET_FAVOURITES_CHARACTERS, {
         onCompleted: (data)=> {
+        console.log("here 3")
         setFavouriteCharacters(data.getFavourites.results)  
         setFavouriteVisible(true)  
         console.log(data)
@@ -190,8 +194,11 @@ const Home = () => {
       }, []);
 
     useEffect(()=>{
-        console.log("onFavourites update")
-        setfavoritesIdsLoaded(true)
+        console.log("onFavourites update", favoritesIds)
+        if(favoritesIds.length>0){
+            setfavoritesIdsLoaded(true)
+        }
+        
     },[favoritesIds])
 
     useEffect(()=>{
@@ -238,15 +245,22 @@ const Home = () => {
 
     const showFavourites = () => {
         console.log("on show favourites")
-        if(isFavouriteVisible){
-            setFavouriteVisible(false)
-        }else{
-            getFavourites({
-                variables: {
-                    favorites: favoritesIds
-                }
-            })
-        }
+        setFavouriteVisible(!isFavouriteVisible)
+        getFavourites({
+            variables: {
+                favorites: favoritesIds
+            }
+        })
+        // if(isFavouriteVisible){
+        //     console.log("here 1")
+        //     setFavouriteVisible(false)
+        // }else{
+        //     getFavourites({
+        //         variables: {
+        //             favorites: favoritesIds
+        //         }
+        //     })
+        // }
        
     }
 
@@ -272,7 +286,7 @@ const Home = () => {
                 <Suspense fallback= {<div>Loading ...</div>}>
                     <Grid container>
                     
-                   {!isFavouriteVisible && favoritesIdsLoaded &&  <InfiniteScroll
+                     {!isFavouriteVisible && favoritesIdsLoaded && <InfiniteScroll
                         dataLength={characterData.length}
                         next={fetchMoreData}
                         hasMore={true}
